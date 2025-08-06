@@ -2,7 +2,7 @@
 
 ## Overview
 
-**POOOONG** is a sophisticated social gaming platform built with React, featuring real-time multiplayer games, user authentication, social features, and competitive gameplay. The application employs a modern architecture with context-based state management, custom hooks, WebSocket connections for real-time data, and a modular component structure. The backend is powered by Django, providing a RESTful API, user authentication, and a WebSocket server for real-time communication. The application is styled with Tailwind CSS and custom CSS, and it is fully responsive and mobile-friendly. The project is containerized with Docker and uses a PostgreSQL database.
+[**POOOONG**](https://ftranscendence.ddns.net:8080/) is a sophisticated social gaming platform built with React, featuring real-time multiplayer games, user authentication, social features, and competitive gameplay. The application employs a modern architecture with context-based state management, custom hooks, WebSocket connections for real-time data, and a modular component structure. The backend is powered by Django, providing a RESTful API, user authentication, and a WebSocket server for real-time communication. The application is styled with Tailwind CSS and custom CSS, and it is fully responsive and mobile-friendly. The project is containerized with Docker and uses a PostgreSQL database.
 
 
 ## Quick Start
