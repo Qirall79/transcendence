@@ -1,0 +1,893 @@
+import { useEffect, useState, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+// import PingPongDisplay from './PingPongDisplay';
+import { useUser } from "@/hooks/useUser";
+import "@/assets/PingPong.css";
+import { check_tournament } from "@/actions/tournamentActions";
+import PingPongDisplay from "../src/frontend/src/pages/games/pingpong/PingPongCanvas";
+
+/*
+	props.obj:
+		ball {
+			color<hex>: str,
+			radius<px>: num,
+			X<%>: num, Y<%>: num,
+			VX<float>: num, VY<float>: num,
+			AX<float>: num, AY<float>: num,
+			paddle_touch: boolean, border_touch: boolean
+		},
+		paddles [
+			{
+				name: str,
+				score: num,
+				color<hex>: str,
+				y<%>: num,
+			},
+			..+1
+		]
+
+	props.state:
+		-1: prepare
+		 0: pause
+		 1: on
+		 2: result
+		 3: counter
+*/
+
+var PingPongLocal = () => {
+  const [queryString, useQueryString] = useSearchParams();
+  const prePlayers = queryString.get("players");
+
+  const [state, setState] = useState(prePlayers ? -1 : -2);
+  const [obj, setObj] = useState(null);
+  const navigate = useNavigate();
+  const stateRef = useRef(state);
+  const objRef = useRef(obj);
+  const canvas_container_ref = useRef(null);
+  const [pause_txt, setPause_txt] = useState("PAUSE");
+  const [players, setPlayers] = useState(prePlayers ? prePlayers : 2);
+
+  var init_paddles = (num) => {
+    let ob = new Array();
+    for (let i = 0; i < num; i++) {
+      ob[i] = new Object();
+      ob[i].color = "#FFFFFF";
+      ob[i].index = i;
+      ob[i].score = 0;
+      ob[i].name = "";
+      ob[i].y = 10;
+      ob[i].h = 20;
+      ob[i].w = 4;
+      ob[i].upState = 0;
+      ob[i].downState = 0;
+    }
+    return ob;
+  };
+
+  var rand = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  };
+
+  var control_handler = (mode, event) => {
+    if (mode && stateRef.current != 1) return;
+    let key = event.key;
+    switch (key) {
+      case "W":
+        key = "w";
+      case "S":
+        key = "s";
+      case "ArrowUp":
+        objRef.current.paddles[0].upState = mode;
+        break;
+      case "ArrowDown":
+        objRef.current.paddles[0].downState = mode;
+        break;
+      case "w":
+        objRef.current.paddles[1].upState = mode;
+        break;
+      case "s":
+        objRef.current.paddles[1].downState = mode;
+        break;
+      default:
+        break;
+    }
+  };
+
+  var start_game = (counter) => {
+    if (counter) {
+      setPause_txt(counter.toString());
+      window.setTimeout(() => start_game(counter - 1), 1000);
+      return;
+    }
+    setPause_txt("PAUSE");
+    setState(1);
+  };
+
+  useEffect(() => {
+    canvas_container_ref.current = document.getElementById("canvas_container");
+    let CWidth = canvas_container_ref.current.offsetWidth;
+    let CHeight = canvas_container_ref.current.offsetHeight;
+
+    var match = new Array();
+
+    match.ball = new Object();
+    match.ball.radius = 2;
+    match.ball.border_touch = false;
+    match.ball.color = "#FFFFFF";
+    match.ball.x = 50;
+    match.ball.y = 50;
+    match.ball.vx = rand(0, 1) ? -0.2 : 0.2;
+    match.ball.vy = rand(0, 1) ? -0.9 : 0.9;
+    match.ball.ax = 0;
+    match.ball.ay = 0;
+    match.result = new Object();
+    if (prePlayers) match.paddles = init_paddles(prePlayers);
+    setObj(match);
+
+    document.onkeydown = (e) => control_handler(1, e);
+    document.onkeyup = (e) => control_handler(0, e);
+    return () => {
+      document.onkeydown = null;
+      document.onkeyup = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    stateRef.current = state;
+    if (state == 2) {
+      if (obj.paddles.length == 2)
+        // reset game
+        window.setTimeout(() => {
+          obj.paddles = init_paddles(players);
+          setState(-1);
+        }, 5500);
+      else if (obj.paddles.length == 4)
+        window.setTimeout(() => {
+          obj.paddles[0] = obj.paddles[2];
+          obj.paddles[1] = obj.paddles[3];
+          obj.paddles[2] = obj.result;
+          obj.paddles.splice(3, 1);
+          setState(0);
+        }, 3000);
+      else if (obj.paddles.length == 3)
+        window.setTimeout(() => {
+          obj.paddles[0] = obj.result;
+          obj.paddles[1] = obj.paddles[2];
+          obj.paddles[0].score = 0;
+          obj.paddles[1].score = 0;
+          obj.paddles.splice(2, 1);
+          setState(0);
+        }, 3000);
+      obj.ball.x = 50;
+      obj.ball.y = 50;
+      obj.ball.vx = rand(0, 1) ? -0.2 : 0.2;
+      obj.ball.vy = rand(0, 1) ? -0.9 : 0.9;
+    }
+  }, [state]);
+
+  useEffect(() => {
+    objRef.current = obj;
+  }, [obj]);
+
+  if (prePlayers && prePlayers != 2 && prePlayers != 4)
+    return <h1>invalid query string</h1>;
+
+  return (
+    <div id="ping_pong">
+      <h1>Ping Pong local!</h1>
+      <button
+        onClick={() => {
+          navigate(
+            "/dashboard/games/ping_pong/online?id=" + user.id + "&mode=random",
+            { replace: false }
+          );
+        }}
+      >
+        go online
+      </button>
+      {state != -2 ? <button onClick={() => setState(-2)}>reset</button> : []}
+      {state == -2 ? (
+        <div id="game_prep">
+          <h1>preperations</h1>
+          <button
+            onClick={(e) => {
+              setPlayers(2);
+              obj.paddles = init_paddles(2);
+              setState(-1);
+            }}
+          >
+            2 players
+          </button>
+          <button
+            onClick={() => {
+              setPlayers(4);
+              obj.paddles = init_paddles(4);
+              setState(-1);
+            }}
+          >
+            4 players
+          </button>
+        </div>
+      ) : state == -1 ? (
+        <div id="game_prep">
+          <h1>preparations</h1>
+          {obj
+            ? obj.paddles.map((el, i) => {
+                return (
+                  <input
+                    key={i}
+                    type="text"
+                    id={"input " + i}
+                    placeholder={"player " + i + " name"}
+                    onChange={(e) => {
+                      el.name = e.target.value;
+                    }}
+                  />
+                );
+              })
+            : []}
+          <button
+            onClick={(e) => {
+              if (obj) {
+                for (let i = 0; i < obj.paddles.length; i++)
+                  if (!obj.paddles[i].name || !obj.paddles[i].name.length) {
+                    alert("invalid player " + i + " name!");
+                    return;
+                  }
+                setState(0);
+              }
+            }}
+          >
+            done
+          </button>
+        </div>
+      ) : (
+        <div id="game_result">
+          {state == 2 ? (
+            <h1>winner is {obj.result.name}!</h1>
+          ) : (
+            <h1>
+              {obj.paddles[0].name}, {obj.paddles[0].score} VS{" "}
+              {obj.paddles[1].name}, {obj.paddles[1].score}
+            </h1>
+          )}
+        </div>
+      )}
+      {state == 0 ? (
+        <button
+          onClick={() => {
+            setState(3);
+            start_game(5);
+          }}
+        >
+          start
+        </button>
+      ) : state == 1 ? (
+        <button onClick={() => setState(0)}>pause</button>
+      ) : (
+        []
+      )}
+      <PingPongDisplay
+        online={false}
+        state={state}
+        obj={obj}
+        setState={setState}
+        setObj={setObj}
+        pause_txt={pause_txt}
+        rounds={5}
+        start_game={start_game}
+      />
+    </div>
+  );
+};
+
+var PingPongOnline = () => {
+  const [queryString, useQueryString] = useSearchParams();
+  const { user, setUser } = useUser();
+  const userId = queryString.get("id");
+  const game_mode = queryString.get("mode");
+
+  var address = `${import.meta.env.VITE_IP_ADDRESS}:8081/ws/`;
+
+  const [socket, setSocket] = useState(null);
+  const [roomName, setRoomName] = useState(game_mode);
+  const [obj, setObj] = useState(null);
+  const [state, setState] = useState(-1);
+  const [role, setRole] = useState(null);
+  const [message, setMessage] = useState("...");
+  const roleRef = useRef(role);
+  const stateRef = useRef(state);
+  const socketRef = useRef(socket);
+  const timeout_id = useRef(0);
+  const playerI = useRef(0);
+  const oPlayerI = useRef(1);
+  const [pause_txt, setPause_txt] = useState("PAUSE");
+  const navigate = useNavigate();
+
+  var connect = () => {
+    var ws = new WebSocket("wss://" + address);
+    ws.onmessage = (e) => {
+      var data = JSON.parse(e.data);
+      if (data.msg_type === "server update") {
+        if (data.obj) setObj(data.obj);
+        if (data.role) {
+          setRole(data.role);
+          playerI.current = data.role == "host" ? 0 : 1;
+          oPlayerI.current = playerI.current ? 0 : 1;
+          /* self identificaiton */
+          ws.send(
+            JSON.stringify({
+              message: "self update",
+              target: "server",
+              name: user.username,
+              id: user.id,
+              i: playerI.current,
+            })
+          );
+        }
+        if (data.state != undefined) {
+          setState(data.state);
+        }
+        if (data.room_name) setRoomName(data.room_name);
+        if (data.pause_txt) setPause_txt(data.pause_txt);
+      } else if (
+        data.msg_type === "pair update" &&
+        data.target == roleRef.current
+      ) {
+        if (data.state !== undefined) {
+          setState(data.state);
+        }
+        if (data.obj) setObj(data.obj);
+      }
+      if (data.message) setMessage(data.msg_type + ": " + data.message);
+    };
+    ws.onerror = (e) => {
+      setMessage("WebSocket error");
+    };
+    ws.onclose = (e) => {
+      setObj(null);
+      setMessage("WebSocket closed");
+    };
+
+    ws.onopen = (e) => {
+      ws.send(
+        JSON.stringify({
+          message: "self init",
+          target: "server",
+          room_id: game_mode,
+          id: user.id,
+        })
+      );
+    };
+
+    setSocket(ws);
+    return ws;
+  };
+
+  var reconnect = () => {
+    socket.close();
+    /* clean */
+    setState(-1);
+    setPause_txt("PAUSE");
+    setRole("unknown");
+    setRoomName(null);
+    setObj(null);
+    window.clearTimeout(timeout_id.current);
+    /* */
+    connect();
+  };
+
+  var send_state = (target, state) => {
+    socketRef.current.send(
+      JSON.stringify({
+        message: "state update",
+        target: target,
+        state: state,
+      })
+    );
+  };
+
+  var send_obj = (target, obj) => {
+    socketRef.current.send(
+      JSON.stringify({
+        message: "obj update",
+        target: target,
+        obj: obj,
+      })
+    );
+  };
+
+  var send_move = (up, down) => {
+    socketRef.current.send(
+      JSON.stringify({
+        message: "player move",
+        target: "server",
+        i: playerI.current,
+        downState: down,
+        upState: up,
+      })
+    );
+  };
+
+  var control_handler = (mode, event) => {
+    if (mode && stateRef.current != 1) return;
+    let key = event.key;
+    switch (event.key) {
+      case "ArrowUp":
+        send_move(mode, -1);
+        break;
+      case "ArrowDown":
+        send_move(-1, mode);
+        break;
+    }
+  };
+
+  var Loading = (props) => {
+    const [elem, setElem] = useState(".");
+    const elemRef = useRef(elem);
+    var interv = () => {
+      setElem((elemRef.current.length < 3 ? elemRef.current : "") + ".");
+    };
+    useEffect(() => {
+      window.setInterval(interv, 1000);
+      return () => {
+        window.clearInterval(interv);
+      };
+    }, []);
+    useEffect(() => {
+      elemRef.current = elem;
+    }, [elem]);
+    return <span>{props.content + elem}</span>;
+  };
+
+  useEffect(() => {
+    socketRef.current = connect();
+    document.onkeydown = (e) => control_handler(1, e);
+    document.onkeyup = (e) => control_handler(0, e);
+    return () => {
+      socketRef.current.close();
+      document.onkeydown = null;
+      document.onkeyup = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  useEffect(() => {
+    roleRef.current = role;
+  }, [role]);
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
+
+  if (!user) return <h1>initiation error!</h1>;
+  if (userId != user.id) return <h1>invalid query string</h1>;
+
+  if (!game_mode) return <h1>invalid query string</h1>;
+  else if (game_mode == "random") address += "game_random/";
+  else address += "game_invite/";
+
+  return (
+    <div id="ping_pong">
+      <h1>Ping Pong online!</h1>
+      <button
+        onClick={() => {
+          navigate("/dashboard/games", { replace: true });
+        }}
+      >
+        back
+      </button>
+      <button
+        onClick={() => {
+          navigate("/offline", { replace: false });
+        }}
+      >
+        go local
+      </button>
+      <button
+        onClick={() => {
+          reconnect();
+        }}
+      >
+        rematch
+      </button>
+      <h1>message: {message}</h1>
+      <h1>room: {roomName}</h1>
+      <h1>role: {role}</h1>
+      <h1>
+        {user.username} VS{" "}
+        {obj &&
+        obj.paddles &&
+        obj.paddles[oPlayerI.current].name.length != 0 ? (
+          obj.paddles[oPlayerI.current].name
+        ) : (
+          <Loading content="" />
+        )}
+      </h1>
+      <h1>
+        {obj &&
+        obj.paddles &&
+        obj.paddles[playerI.current].score != undefined ? (
+          obj.paddles[playerI.current].score
+        ) : (
+          <Loading content="" />
+        )}{" "}
+        --{" "}
+        {obj &&
+        obj.paddles &&
+        obj.paddles[oPlayerI.current].name.length != 0 ? (
+          obj.paddles[oPlayerI.current].score
+        ) : (
+          <Loading content="" />
+        )}
+      </h1>
+      {state == 0 ? (
+        <button
+          onClick={() => {
+            setState(3);
+            send_state(playerI.current ? "host" : "guest", 3);
+          }}
+        >
+          start
+        </button>
+      ) : state == 1 ? (
+        <button
+          onClick={() => {
+            setState(0);
+            send_state(playerI.current ? "host" : "guest", 0);
+          }}
+        >
+          pause
+        </button>
+      ) : state == 2 ? (
+        <h1>winner is {obj && obj.result ? obj.result.name : ""}!</h1>
+      ) : (
+        []
+      )}
+      <PingPongDisplay
+        online={true}
+        state={state}
+        obj={obj}
+        setState={setState}
+        setObj={setObj}
+        pause_txt={pause_txt}
+        rounds={5}
+      />
+    </div>
+  );
+};
+
+var PingPongOnlineTournament = () => {
+  const [queryString, useQueryString] = useSearchParams();
+  const { user, setUser } = useUser();
+  const userId = queryString.get("id");
+
+  var address = `${import.meta.env.VITE_IP_ADDRESS}:8081/ws/game_tournament/`;
+
+  const [socket, setSocket] = useState(null);
+  const [message, setMessage] = useState("...");
+  const [tournament, setTournament] = useState(null);
+  const [players, setPlayers] = useState(null);
+  const [currentMatch, setCurrentMatch] = useState(null);
+  const [matchResult, setMatchResult] = useState(null);
+  const [tournamentResult, setTournamentResult] = useState(null);
+
+  const [roomName, setRoomName] = useState(null);
+  const [obj, setObj] = useState(null);
+  const [state, setState] = useState(-1);
+  const [role, setRole] = useState(null);
+  const [pause_txt, setPause_txt] = useState("PAUSE");
+  const [tid, setTid] = useState(queryString.get("tid"));
+
+  var roleRef = useRef(role);
+  var stateRef = useRef(state);
+  var timeout_id = useRef(0);
+
+  var tournamentRef = useRef(tournament);
+  var socketRef = useRef(socket);
+  var navigate = useNavigate();
+
+  var connect = () => {
+    var ws = new WebSocket("wss://" + address);
+    ws.onmessage = (e) => {
+      var data = JSON.parse(e.data);
+      if (data.msg_type === "server update") {
+        if (data.obj) setObj(data.obj);
+        if (data.state != undefined) {
+          setState(data.state);
+          window.clearTimeout(timeout_id.current);
+        }
+        if (data.tournament) {
+          setTournament(data.tournament);
+          if (data.message == "tournament ended")
+            setTournamentResult(data.tournament);
+        }
+        if (data.players) setPlayers(data.players);
+        if (data.message == "match result" && data.match_result) {
+          if (user.id == data.winner || user.id == data.loser)
+            setMatchResult(JSON.parse(data.match_result));
+        }
+
+        if (data.message == "fuck off") ws.close();
+
+        if (
+          data.message == "you are moving forward with us" &&
+          data.target == user.id
+        ) {
+          ws.send(
+            JSON.stringify({
+              target: "server",
+              message: "winners hall confirmation",
+              id: user.id,
+            })
+          );
+        }
+
+        if (
+          data.message ==
+            "a better candidate is moving forward with us, fuck off" &&
+          data.target == user.id
+        )
+          setState(5);
+
+        if (data.message == "tournament result" && data.tournament_result) {
+          setTournamentResult(JSON.parse(data.tournament_result));
+          setState(4);
+        }
+
+        if (data.message == "match init") {
+          if (data.player1 == user.id || data.player2 == user.id) {
+            setRoomName(data.match_id);
+            setCurrentMatch(JSON.parse(data.match));
+
+            let role = "host";
+            if (data.player2 == user.id) role = "guest";
+            setRole(role);
+
+            ws.send(
+              JSON.stringify({
+                target: "server",
+                message: "match confirmation",
+                match_id: data.match_id,
+                role: role,
+              })
+            );
+          }
+        }
+
+        if (data.pause_txt) setPause_txt(data.pause_txt);
+      } else if (
+        data.msg_type === "pair update" &&
+        data.target &&
+        data.target == roleRef.current
+      ) {
+        if (data.state !== undefined) setState(data.state);
+        if (data.obj) setObj(data.obj);
+      }
+      if (data.message) setMessage(data.msg_type + ": " + data.message);
+    };
+    ws.onerror = (e) => {
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+      setMessage("WebSocket error");
+    };
+    ws.onclose = (e) => {
+      setObj(null);
+      setPlayers(null);
+      setTournament(null);
+      setCurrentMatch(null);
+      //setMatchResult(null);
+      //setTournamentResult(null);
+      setMessage("WebSocket closed");
+    };
+    ws.onopen = (e) => {
+      ws.send(
+        JSON.stringify({
+          message: "self init",
+          target: "server",
+          id: user.id,
+          tid: tid,
+        })
+      );
+    };
+    setSocket(ws);
+    return ws;
+  };
+
+  var reconnect = () => {
+    socket.close();
+    setState(-1);
+    setPause_txt("PAUSE");
+    setRole("unknown");
+    window.clearTimeout(timeout_id.current);
+    connect();
+  };
+
+  var send_state = (target, state) => {
+    socketRef.current.send(
+      JSON.stringify({
+        message: "state update",
+        target: target,
+        state: state,
+      })
+    );
+  };
+
+  var send_obj = (target, obj) => {
+    socketRef.current.send(
+      JSON.stringify({
+        message: "obj update",
+        target: target,
+        obj: obj,
+      })
+    );
+  };
+
+  var send_move = (up, down) => {
+    socketRef.current.send(
+      JSON.stringify({
+        message: "player move",
+        target: "server",
+        id: user.id,
+        downState: down,
+        upState: up,
+      })
+    );
+  };
+
+  var control_handler = (mode, event) => {
+    if (mode && stateRef.current != 1) return;
+    let key = event.key;
+    switch (key) {
+      case "ArrowUp":
+        send_move(mode, -1);
+        break;
+      case "ArrowDown":
+        send_move(-1, mode);
+        break;
+    }
+  };
+
+  var Loading = (props) => {
+    const [elem, setElem] = useState(".");
+    const elemRef = useRef(elem);
+    var interv = () => {
+      setElem((elemRef.current.length < 3 ? elemRef.current : "") + ".");
+    };
+    useEffect(() => {
+      window.setInterval(interv, 1000);
+      return () => {
+        window.clearInterval(interv);
+      };
+    }, []);
+    useEffect(() => {
+      elemRef.current = elem;
+    }, [elem]);
+    return <span>{props.content + elem}</span>;
+  };
+
+  useEffect(() => {
+    var ws = connect();
+    document.onkeydown = (e) => control_handler(1, e);
+    document.onkeyup = (e) => control_handler(0, e);
+    return () => {
+      document.onkeyup = null;
+      document.onkeydown = null;
+      ws.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
+  useEffect(() => {
+    roleRef.current = role;
+  }, [role]);
+
+  if (!user) return <h1>initiation error!</h1>;
+  if (!tid || userId != user.id)
+    return <h1>invalid query string(user id, tournament id)</h1>;
+
+  return (
+    <div
+      id="ping_pong"
+      style={{ height: "90vh", alignItems: "start", padding: "10px" }}
+    >
+      <h1>Ping Pong online tournament!</h1>
+      <button
+        onClick={() => {
+          navigate("/dashboard/games", { replace: true });
+        }}
+      >
+        back
+      </button>
+      <button
+        onClick={() => {
+          navigate("/offline", { replace: false });
+        }}
+      >
+        go local
+      </button>
+      <button
+        onClick={() => {
+          navigate(
+            "/dashboard/games/ping_pong/online?mode=random&id=" + user.id,
+            { replace: false }
+          );
+        }}
+      >
+        go single online
+      </button>
+      <h1>message: {message}</h1>
+      <h1>room: {roomName}</h1>
+      <h1>role: {role}</h1>
+      <h2>
+        tournament:{" "}
+        {tournament ? JSON.stringify(tournament) : <Loading content="" />}
+      </h2>
+      <h2>
+        currentMatch:{" "}
+        {currentMatch ? (
+          JSON.stringify(currentMatch, null, "\t")
+        ) : (
+          <Loading content="" />
+        )}
+      </h2>
+      <h2>
+        matchResult:{" "}
+        {matchResult ? (
+          JSON.stringify(matchResult, null, "\t")
+        ) : (
+          <Loading content="" />
+        )}
+      </h2>
+      <h2>
+        tournamentResult:{" "}
+        {tournamentResult ? (
+          JSON.stringify(tournamentResult, null, "\t")
+        ) : (
+          <Loading content="" />
+        )}
+      </h2>
+      {state == 0 ? (
+        <button
+          onClick={() => {
+            setState(3);
+            send_state(roleRef.current == "guest" ? "host" : "guest", 3);
+          }}
+        >
+          start
+        </button>
+      ) : state == 1 ? (
+        <button
+          onClick={() => {
+            setState(0);
+            send_state("server", 0);
+            send_state(releRef.current == "guest" ? "host" : "guest", 0);
+          }}
+        >
+          pause
+        </button>
+      ) : state == 2 ? (
+        <h1>match ended</h1>
+      ) : state == 4 ? (
+        <h1>tournament ended</h1>
+      ) : state == 5 ? (
+        <h1>you have been eliminated from the tournament!</h1>
+      ) : (
+        []
+      )}
+      <PingPongDisplay
+        online={true}
+        state={state}
+        obj={obj}
+        setState={setState}
+        setObj={setObj}
+        pause_txt={pause_txt}
+        rounds={3}
+      />
+    </div>
+  );
+};
+
+export { PingPongOnline, PingPongLocal, PingPongOnlineTournament };

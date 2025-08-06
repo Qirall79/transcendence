@@ -1,0 +1,130 @@
+{
+    "buttonPage": {
+      "header": {
+        "frame": {
+          "width": "1280px",
+          "padding": "32px",
+          "background": "{colors.neutral.50}",
+          "spacing": "24px"
+        },
+        "title": {
+          "text": "Button Components",
+          "style": {
+            "font": "Audiowide",
+            "size": "48px",
+            "lineHeight": "56px",
+            "color": "{colors.neutral.900}"
+          }
+        },
+        "description": {
+          "style": {
+            "font": "Outfit",
+            "size": "16px",
+            "lineHeight": "24px",
+            "color": "{colors.neutral.700}"
+          }
+        }
+      },
+      "buttonGrid": {
+        "frame": {
+          "columns": "4",
+          "spacing": "32px",
+          "padding": "32px"
+        }
+      },
+      "variants": {
+        "primary": {
+          "default": {
+            "background": "{colors.primary.600}",
+            "text": "{colors.neutral.50}",
+            "padding": "0 16px",
+            "height": "40px",
+            "borderRadius": "8px",
+            "shadow": "elevation.1"
+          },
+          "hover": {
+            "background": "{colors.primary.700}",
+            "shadow": "elevation.2"
+          },
+          "active": {
+            "background": "{colors.primary.800}",
+            "transform": "scale(0.98)"
+          },
+          "disabled": {
+            "background": "{colors.neutral.200}",
+            "text": "{colors.neutral.400}"
+          }
+        },
+        "secondary": {
+          "default": {
+            "border": "2px solid {colors.primary.600}",
+            "text": "{colors.primary.600}",
+            "padding": "0 16px",
+            "height": "40px",
+            "borderRadius": "8px"
+          },
+          "hover": {
+            "background": "{colors.primary.50}",
+            "border": "2px solid {colors.primary.700}",
+            "text": "{colors.primary.700}"
+          }
+        },
+        "tertiary": {
+          "default": {
+            "text": "{colors.primary.600}",
+            "padding": "0 16px",
+            "height": "40px"
+          },
+          "hover": {
+            "background": "{colors.primary.50}"
+          }
+        },
+        "icon": {
+          "default": {
+            "size": "40px",
+            "borderRadius": "20px",
+            "padding": "8px"
+          },
+          "hover": {
+            "background": "{colors.primary.50}"
+          }
+        }
+      },
+      "sizes": {
+        "sm": {
+          "height": "32px",
+          "padding": "0 12px",
+          "text": "14px",
+          "icon": "16px"
+        },
+        "md": {
+          "height": "40px",
+          "padding": "0 16px",
+          "text": "16px",
+          "icon": "20px"
+        },
+        "lg": {
+          "height": "48px",
+          "padding": "0 24px",
+          "text": "18px",
+          "icon": "24px"
+        }
+      },
+      "states": {
+        "focus": {
+          "ring": {
+            "color": "{colors.primary.200}",
+            "width": "3px",
+            "offset": "2px"
+          }
+        },
+        "loading": {
+          "opacity": "0.7",
+          "spinner": {
+            "color": "currentColor",
+            "size": "20px"
+          }
+        }
+      }
+    }
+  }

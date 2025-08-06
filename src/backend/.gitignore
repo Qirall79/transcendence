@@ -1,0 +1,87 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Database
+*.sqlite3
+*.db
+
+# Docker
+.docker/
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Dependencies
+node_modules/
+
+# Build files
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Local development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Monitoring
+prometheus_data/
+grafana_data/
+
+# Environment variables
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node
+node_modules/
+.next/
+project_structure.md
+project-files.json

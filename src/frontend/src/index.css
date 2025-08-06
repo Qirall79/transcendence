@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem
+  }
+}
+
+/* Essential fixes for layout height issues */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: black;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #2b2c51;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #8B8EF8;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #8b8ff877;
+}
+
+/* Ensure content areas properly fill their containers */
+.h-full {
+  height: 100%;
+}
+
+.dashboard-content {
+  flex: 1;
+  height: 100%;
+  overflow: auto;
+}
+
+
+/* Login animations */
+.login-card {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.scale-up-fade-out {
+  animation: scaleUpFadeOut 0.5s ease forwards;
+}
+
+@keyframes scaleUpFadeOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* Dark mode styles for the emoji picker */
+.epr-main {
+  background-color: #0A0B14 !important;
+  border-radius: 10px !important;
+  border: 1px solid #444 !important;
+}
+
+.epr-header {
+  background-color: #0A0B14 !important;
+  border-bottom: 1px solid #444 !important;
+}
+
+.epr-search-container input {
+  background-color: #0A0B14 !important;
+  color: #fff !important;
+  border: 1px solid #555 !important;
+}
+
+.epr-search-container input::placeholder {
+  color: #888 !important;
+}
+
+.epr-emoji-category-label {
+  background-color: #0A0B14 !important;
+  color: #fff !important;
+}
+
+.epr-emoji {
+  filter: brightness(0.9);
+}
+
+.epr-emoji:hover {
+  background-color: #0A0B14 !important;
+}
+
+.epr-preview {
+  background-color: #0A0B14 !important;
+  color: #fff !important;
+}
+
+.epr-skin-tones {
+  background-color: #0A0B14 !important;
+}
+
+.epr-emoji-category-content .epr-emoji {
+  filter: brightness(0.9);
+}

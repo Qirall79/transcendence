@@ -1,0 +1,101 @@
+services:
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    user: root
+    volumes:
+      - ./src/frontend:/app:rw
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "${FRONTEND_PORT:-3000}:4173"
+    env_file: .env
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/backend:/app
+      - backend_static:/app/staticfiles
+      - backend_media:/app/mediafiles
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    env_file: .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: .env
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - app-network
+    depends_on:
+      - vault
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-transcendence}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  nginx:
+    build: 
+      context: ./src/nginx
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template
+    ports:
+      - 8080:80
+      - 8081:443
+    depends_on:
+      - frontend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  vault:
+    build: 
+      context: ./src/vault
+      dockerfile: Dockerfile
+    container_name: vault
+    env_file: .env
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./src/vault/init-vault.sh:/usr/local/bin/init-vault.sh
+    cap_add:
+      - IPC_LOCK
+    entrypoint: ["sh", "-c", "init-vault.sh"]
+    restart: unless-stopped
+    networks:
+      - app-network
+
+
+volumes:
+  postgres_data:
+  backend_static:
+  backend_media:
+
+networks:
+  app-network:
+    driver: bridge

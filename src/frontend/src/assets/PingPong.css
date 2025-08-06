@@ -1,0 +1,191 @@
+* {
+	padding: 0px;
+	margin: 0px;
+	box-sizing: border-box;
+	transition-duration: 0.1s;
+}
+
+#ping_pong {
+	height: 100%;
+	width: 100%;
+	background: #000;
+	color: #fff;
+	text-transform: uppercase;
+	font-family: monospace;
+	justify-content: space-between;
+}
+
+#ping_pong, #ping_pong div, #ping_pong button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	background: #000;
+}
+
+#ping_pong {
+	flex-direction: column;
+	justify-content: space-around;
+}
+
+#ping_pong #game_header {
+	width: 100%;
+	height: auto;
+	flex-direction: column;
+	justify-content: start;
+	row-gap: 1em;
+}
+
+#ping_pong #canvas_container {
+	height: 500px;
+	width: 900px;
+	max-width: 100vw;
+	overflow: hidden;
+	display: flex;
+}
+
+#ping_pong p {
+	font-size: 0.85em;
+}
+
+#ping_pong h1 {
+	font-size: 1.3333em;
+}
+
+#ping_pong button {
+	width: auto;
+	min-width: 10em;
+	height: 2.3em;
+	font-size: 1.1em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition-duration: .3s;
+}
+
+#ping_pong button:hover{
+	background: #fff;
+	color: #000;
+	cursor: pointer;
+}
+
+#ping_pong input {
+	outline: none;
+	border-radius: 0px;	
+	padding: 0 5px;
+	height: 2em;
+	width: 15em;
+}
+
+#ping_pong input, #ping_pong button{
+	background: rgba(0, 0, 0, 0);
+	color: #fff;
+	border: 1px solid rgb(200, 200, 200);
+	font-family: monospace;
+}
+
+#ping_pong #game_prep {
+	width: auto;
+	min-width: 50%;
+	height: auto;
+	min-height: 50%;
+	row-gap: 1em;
+	padding: 1em 2em;
+	align-items: start;
+}
+
+#ping_pong #game_result {
+	width: auto;
+	min-width: 50%;
+	height: auto;
+	min-height: 30%;
+	row-gap: 1em;
+}
+
+
+#ping_pong #game_prep, #ping_pong #game_result, #ping_pong #canvas_container,
+#ping_pong #match_end, #ping_pong #tournament_end, #ping_pong #tournament_loss,
+#ping_pong #tournament_match_container, #ping_pong #tournament_info_display_container {
+	border: 1px solid rgb(120, 120, 120);
+	background-image: linear-gradient(to bottom right, #20242b, #000);
+}
+
+#ping_pong #match_end, #ping_pong #tournament_end, #ping_pong #tournament_loss {
+	height: 30%;
+	width: 60%;
+}
+
+#ping_pong #tournament_container {
+	width: auto;
+	height: auto;
+	flex-direction: row;
+	align-items: space-between;
+	column-gap: 1em;
+	align-items: start;
+}
+
+#ping_pong #tournament_container #tournament_info_display {
+	height: auto;
+	width: 30%;
+	padding: 1em;
+	row-gap: 1em;
+	align-items: start;
+}
+
+#ping_pong #tournament_container #tournament_info_display > div, #ping_pong #tournament_result_display_container,
+#ping_pong #tournament_match_result_display_container {
+	height: 50%;
+	width: auto;
+	min-width: 50%;
+	justify-content: start;
+	align-items: start;
+	padding: 1em;
+}
+
+#ping_pong #tournament_match_result_display_container, #ping_pong #tournament_result_display_container {
+	border: 1px solid rgb(120, 120, 120);
+}
+
+#ping_pong #tournament_match_container, #ping_pong #tournament_info_display_container {
+	align-items: start;
+	justify-content: start;
+	padding: 1em;
+}
+
+#ping_pong #tournament_match_container > h1 > span, #ping_pong #tournament_info_display_container > h1 > span {
+	padding: 1px 5px;
+}
+
+#ping_pong #game_obj_hidden {
+	display: none;
+}
+
+@media only screen and (max-width: 700px) {
+	#ping_pong h1 { transform: scale(0.8); }
+	#ping_pong #canvas_container {
+		width: 500px;
+		height: 200px;
+	}
+}
+
+@media only screen and (max-width: 900px) {
+	#ping_pong h1 { transform: scale(0.85); }
+	#ping_pong #canvas_container {
+		width: 700px;
+		height: 300px;
+	}
+}
+
+@media only screen and (max-width: 1200px) {
+	#ping_pong h1 { transform: scale(0.9); }
+	#ping_pong #canvas_container {
+		width: 800px;
+		height: 400px;
+	}
+}
+
+@media only screen and (max-width: 1500px) {
+	#ping_pong #tournament_container {
+		flex-direction: column;
+	}
+}
+
